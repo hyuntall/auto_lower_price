@@ -2,45 +2,40 @@ import urllib.parse
 import requests
 import json
 
-CLIENT_ID = "gCoWAOgsc_VjbgJdnSLP"
+CLIENT_ID = "gCoWAOgsc_VjbgJdnSLP"  # 이거 일단 내 네이버 계정으로 발급받은 키인데 나중에 서윤이 네이버 계정으로 발급 받는 방법 알려줄게
 CLIENT_PASSWORD = "AB9p7GeLG5"
 HEADER = {
     "X-Naver-Client-Id": CLIENT_ID,
     "X-Naver-Client-Secret": CLIENT_PASSWORD,
 }
 
-def get_lprice(name):
+
+def request_api(name):
+    # Open API 검색 요청 개체 설정
     url = "https://openapi.naver.com/v1/search/shop.json"
     option = "&display=1&sort=count"
     query = "?query=" + urllib.parse.quote(name)
     url_query = url + query + option
-
-    # Open API 검색 요청 개체 설정
+    # 검색 요청 및 처리
     response = requests.get(url_query, headers=HEADER)
-    #검색 요청 및 처리
-    rescode = response.status_code
-    arr = []
-    if(rescode == 200):
+    if response.status_code == 200:
         json_data = json.loads(response.text)
+        return json_data
+    return None
+
+
+def get_lprice(name):
+    json_data = request_api(name)
+    if json_data:
         items = json_data['items']
         if items:
             title = items[0]['title']
             lprice = items[0]['lprice']
             link = items[0]['link']
             mallName = items[0]['mallName']
-        else:
-            title = None
-            lprice = None
-            link = None
-            mallName = None
-        arr.append(title)
-        arr.append(lprice)
-        arr.append(link)
-        arr.append(mallName)
-        # print(f"{title}: {lprice}원, {link}, {mallName}")
-    else:
-        print("Error code:"+rescode)
-    return arr
+            return [title, lprice, link, mallName]
+    else:  # 검색 정보가 없을 경우 None 리턴
+        return [None, None, None, None]
 
 
 if __name__ == "__main__":
